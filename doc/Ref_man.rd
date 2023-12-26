@@ -1,6 +1,8 @@
 =begin
 =RubyNetCDF Reference Manual
 
+RubyNetCDF version : 0.7.1
+
 * ((<Method Index>))
 
 ---------------------------------------------
@@ -21,6 +23,9 @@ Optionally, RubyNetCDF offers methods to handle data missing
 automatically. To use it, you will also
 need ((<NArrayMiss|URL:http://ruby.gfd-dennou.org/products/narray_miss/>)). 
 See ((<Usage>)) for details.
+
+Currently, NetCDF-4 support is partial (the new data models have not been
+supported).
 
 ===Structure
 
@@ -154,6 +159,9 @@ distribution package.
 * ((<class NetCDF>))
 
   Class Methods
+    * ((<NetCDF.nc4?>)) returens wheather the linked library is NetCDF-4 (true/false)
+    * ((<NetCDF.creation_format=>)) Set the file format created by NetCDF.create (for NetCDF-4 only).
+    * ((<NetCDF.creation_format>)) Returns the current setting of the creation format (for NetCDF-4 only).
     * ((<NetCDF.open>))     Opens a file (class method). If mode="w" and non-existent, a new
     * ((<NetCDF.new>))     Aliased to NetCDF.open
     * ((<NetCDF.create>))     Creates a NetCDF file (class method)
@@ -207,6 +215,10 @@ distribution package.
     * ((<NetCDFVar.unpack_type>))     Returns the NArray type set by ((<NetCDFVar.unpack_type=>)).
 
   Instance Methods
+    * ((<deflate>)) Sets "deflation" (compression). (netCDF-4 only)
+    * ((<deflate_params>)) Retuns present deflation parameters. (netCDF-4 only)
+    * ((<endian=>)) Sets (changes) the endian. (netCDF-4 only)
+    * ((<endian>)) Retunrs the present endian setting. (netCDF-4 only)
     * ((<dim>))     Inquires the dim_num-th dimension of the variable (dim_num=0,1,2,..)
     * ((<dims>))     Returns an array of all the dimensions of the variable
     * ((<shape_ul0>))     Returns the shape of the variable, but the length of the unlimited dimension is set to zero.
@@ -263,7 +275,34 @@ distribution package.
 ---------------------------------------------
 
 =class NetCDF
+===constants
+* NC_NOWRITE, NC_WRITE, NC_SHARE, NC_CLOBBER, NC_NOCLOBBER, NC_64BIT_OFFSET, NC_NETCDF4, NC_CLASSIC_MODEL, NCVERSION, SUPPORT_BIGMEM : these constants can accessed by NumRu::NetCDF::NC_NOWRITE etc.
+
 ===Class Methods
+---NetCDF.nc4?
+     Returens wheather the linked NetCDF library is NetCDF-4 (true/false).
+     false means that it is version 3.
+
+---NetCDF.creation_format=(cmode)
+     (Available only when NetCDF version 4 is used. Error is raised if not.)
+     Set the file format created by NetCDF.create. The initial setting is
+     "classic" (conventional netcdf 3 format).
+
+     Arguments
+     * cmode : one of the following:
+       * 0, nil, or NetCDF::NC_CLASSIC_MODEL : the classic format
+         (original NetCDF-3 format). This is the default setting of
+         RubyNetCDF. 
+       * NetCDF::NC_64BIT_OFFSET : classic but supports larger variables
+       * NetCDF::NC_NETCDF4 : The new NetCDF-4 format based on HDF5
+       * ( NetCDF::NC_NETCDF4 | NetCDF::NC_CLASSIC_MODEL) [bit "or" of
+         NetCDF::NC_NETCDF4 and NetCDF::NC_CLASSIC_MODEL ]: the new
+         NetCDF-4 format but new data models are disabled.
+
+---NetCDF.creation_format
+     (Available only when NetCDF version 4 is used. Error is raised if not.)
+     Returns the current setting of the creation format.
+
 ---NetCDF.open(filename, mode="r", share=false)
      Opens a file (class method). If mode="w" and the file does not
      exist, a new file is created.
@@ -776,6 +815,58 @@ distribution package.
        NArray::SFLOAT, or NArray::FLOAT
 
 ===Instance Methods
+---deflate(deflate_level, shuffle=false)
+     (Available only when NetCDF version 4 is used. Error is raised if not.)
+     Makes the current (newly created) variable "deflated" (=compressed). 
+     This method must be called after
+     defining a variable (NetCDF#((<def_var>))) and before calling NetCDF#((<enddef>)).
+
+     Arguments
+     * deflate_level (Integer) :: 0 to 9. (0: no compression; 9:
+       highest compression; recommended: 1 or 2).
+     * shuffle (optional; true or false; default: false) if true,
+       turn on the shuffle filter. 
+       * ((<URL:http://www.unidata.ucar.edu/software/netcdf/papers/AMS_2008.pdf>)):
+         ``The shuffle algorithm changes the byte order in the data stream;
+	 when used with integers that are all close together, this
+	 results in a better compression ratio. There is no benefit
+	 from using the shuffle filter without also using
+	 compression.''
+       * Note: shuffle is effective for float variables too (tested by horinouchi).
+
+     Return value
+     * self
+
+---deflate_params
+     (Available only when NetCDF version 4 is used. Error is raised if not.)
+     Returns the present deflation parameters.
+
+     Return value
+     * [shuffle, deflate, deflate_level] (a 3-element Array),
+       where the values of shuffle and deflate are
+       true or false, and deflate_level is an Integer (0-9).
+
+---endian=(endian)
+     (Available only when NetCDF version 4 is used. Error is raised if not.)
+     Sets (changes) the endian. See ((<deflate>)) for when to use it.
+
+     Arguments
+     * endian : one of the following constants:
+       NetCDF::NC_ENDIAN_NATIVE (=0) (default), 
+       NetCDF::NC_ENDIAN_LITTLE (=1), or NetCDF::NC_ENDIAN_BIG (=2).
+
+     Return value
+     * self
+
+---endian
+     (Available only when NetCDF version 4 is used. Error is raised if not.)
+     Returns the current endian setting.
+
+     Return value
+     * one of the following constants:
+       NetCDF::NC_ENDIAN_NATIVE (=0) (default), 
+       NetCDF::NC_ENDIAN_LITTLE (=1), or NetCDF::NC_ENDIAN_BIG (=2).
+
 ---dim(dim_num)
      Inquires the dim_num-th dimension of the variable (dim_num=0,1,2,..)
 

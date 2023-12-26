@@ -1,6 +1,8 @@
 =begin
 =RubyNetCDF レファレンスマニュアル
 
+RubyNetCDF version : 0.7.1
+
 * ((<メソッドインデックス>))
 
 ---------------------------------------------
@@ -22,6 +24,8 @@ NumPy と似るが、幾つかのテストは NArray のほうが NumPy より効率が良い
 提供する。これを使うには、
 ((<NArrayMiss|URL:http://ruby.gfd-dennou.org/products/narray_miss/>)) 
 が必要である。詳しくは((<使用法>))を見よ。
+
+現在 NetCDF-4 のサポートは部分的である(新しいデータモデルはサポートしてない)。
 
 ===構成
 
@@ -146,6 +150,9 @@ RubyNetCDFライブラリーを利用するためには、まず次の行を Ruby プログラムに書い
 * ((<クラス NetCDF>))
 
   クラスメソッド
+    * ((<NetCDF.nc4?>)) リンクされた NetCDF が version 4 かどうか返す
+    * ((<NetCDF.creation_format=>)) NetCDF.createで作られるファイルフォーマットを設定する (NetCDF-4 専用).
+    * ((<NetCDF.creation_format>))  NetCDF.createで作られるファイルフォーマットの設定を返す. (NetCDF-4 専用).
     * ((<NetCDF.open>))     ファイルオープン（クラスメソッド）mode="w" でファイルが存在しなければ新規作成
     * ((<NetCDF.new>))     NetCDF.openメソッドのエイリアスである
     * ((<NetCDF.create>))     NetCDFファイルを作る（クラスメソッド)
@@ -199,6 +206,10 @@ RubyNetCDFライブラリーを利用するためには、まず次の行を Ruby プログラムに書い
 
 
   インスタンスメソッド
+    * ((<deflate>)) 圧縮 (deflation) を設定. (netCDF-4 only)
+    * ((<deflate_params>)) 現在の圧縮設定問合せ. (netCDF-4 only)
+    * ((<endian=>)) エンディアンを設定 (netCDF-4 only)
+    * ((<endian>)) エンディアン設定を返す. (netCDF-4 only)
     * ((<dim>))     その変数における dim_num 番目(0から数える)の次元を問合わせる。
     * ((<dims>))     その変数の全次元を配列にいれて返す
     * ((<shape_ul0>))     変数の形を返す. 但し無制限次元の長さはゼロ.
@@ -254,7 +265,36 @@ RubyNetCDFライブラリーを利用するためには、まず次の行を Ruby プログラムに書い
 ---------------------------------------------
 
 =クラス NetCDF
+===定数
+* NC_NOWRITE, NC_WRITE, NC_SHARE, NC_CLOBBER, NC_NOCLOBBER, NC_64BIT_OFFSET, NC_NETCDF4, NC_CLASSIC_MODEL, NCVERSION, SUPPORT_BIGMEM : これらは NumRu::NetCDF::NC_NOWRITE などアクセスする。
+
 ===クラスメソッド
+---NetCDF.nc4?
+     このライブラリが NetCDF version 4 を使うようになっていれば
+     （リンクされてる NetCDF ライブラリがver 4なら）true を，
+     そうでなければ (NetCDF 3なら) false を返す。
+
+---NetCDF.creation_format=(cmode)
+     (このメソッドは NetCDF-4 が使われてるときのみ使用可能：そうでなければ
+     例外が発生する). NetCDF.create で作られるファイルのフォーマットを指定する.
+     初期設定は "classic".
+
+     引数
+     * cmode : 以下のいずれか。
+       * 0, nil, or NetCDF::NC_CLASSIC_MODEL : classic format
+         (以前からの NetCDF-3 のフォーマット). これが初期設定.
+       * NetCDF::NC_64BIT_OFFSET : classic だが，変数のサイズを大きく出来る
+       * NetCDF::NC_NETCDF4 : HDF5 ベースの NetCDF-4 新フォーマット
+       * ( NetCDF::NC_NETCDF4 | NetCDF::NC_CLASSIC_MODEL) [これは
+         NetCDF::NC_NETCDF4 と NetCDF::NC_CLASSIC_MODEL の bit "or"]: 
+         NetCDF-4 新フォーマットだが，新しいデータモデルは使えないよう制限.
+
+
+---NetCDF.creation_format
+     (このメソッドは NetCDF-4 が使われてるときのみ使用可能：そうでなければ
+     例外が発生する). 
+     NetCDF.create で作られるファイルのフォーマットの現在の設定を返す.
+
 ---NetCDF.open(filename, mode="r", share=false)
      ファイルオープン（クラスメソッド）mode="w" でファイルが存在しなければ新規作成
 
@@ -757,6 +797,61 @@ RubyNetCDFライブラリーを利用するためには、まず次の行を Ruby プログラムに書い
        NArray::SFLOAT, or NArray::FLOAT
 
 ===インスタンスメソッド
+---deflate(deflate_level, shuffle=false)
+     (このメソッドは NetCDF-4 が使われてるときのみ使用可能：そうでなければ
+     例外が発生する). 
+     (新しく作成された)変数が圧縮(deflate)されるようにする. このメソッドは，
+     変数を作成 (NetCDF#((<def_var>))) した後，NetCDF#((<enddef>))
+     を呼ぶ前に呼ばなければならない.
+
+     引数
+     * deflate_level (Integer) :: 0 to 9. (0: no compression; 9:
+       highest compression; recommended: 1 or 2).
+     * shuffle (optional; true or false; default: false) if true,
+       turn on the shuffle filter. 
+       * ((<URL:http://www.unidata.ucar.edu/software/netcdf/papers/AMS_2008.pdf>)):
+         ``The shuffle algorithm changes the byte order in the data stream;
+	 when used with integers that are all close together, this
+	 results in a better compression ratio. There is no benefit
+	 from using the shuffle filter without also using
+	 compression.''
+       * Note: shuffle is effective for float variables too (tested by horinouchi).
+
+     戻り値
+     * self
+
+---deflate_params
+     (このメソッドは NetCDF-4 が使われてるときのみ使用可能：そうでなければ
+     例外が発生する). 
+     現在の圧縮(deflation)パラメターを返す。
+
+     戻り値
+     * [shuffle, deflate, deflate_level] (a 3-element Array).
+       shuffle と deflate は true または false. deflate_level は整数(0-9).
+
+---endian=(endian)
+     (このメソッドは NetCDF-4 が使われてるときのみ使用可能：そうでなければ
+     例外が発生する). 
+     エンディアンを設定する。使用タイミングは ((<deflate>)) と同じ。
+
+     Arguments
+     * endian : 次のいずれか:
+       NetCDF::NC_ENDIAN_NATIVE (=0) (default), 
+       NetCDF::NC_ENDIAN_LITTLE (=1), or NetCDF::NC_ENDIAN_BIG (=2).
+
+     Return value
+     * self
+
+---endian
+     (このメソッドは NetCDF-4 が使われてるときのみ使用可能：そうでなければ
+     例外が発生する). 
+     現在のエンディアン設定を返す.
+
+     Return value
+     * 次のいずれか:
+       NetCDF::NC_ENDIAN_NATIVE (=0) (default), 
+       NetCDF::NC_ENDIAN_LITTLE (=1), or NetCDF::NC_ENDIAN_BIG (=2).
+
 ---dim(dim_num)
      その変数における dim_num 番目(0から数える)の次元を問合わせる。
 

@@ -1,3 +1,54 @@
+Tue Jan 27  2015  T Horinouchi
+	* ruby-netcdf-0.7.1 released (relase tag: ruby-netcdf-0_7_1)
+Tue Jan 27  2015  T Horinouchi
+	* doc/ updated
+	* demo/demo5-netcdf4.rb: created
+	* netcdfraw.c:
+	  * added new NetCDF-4 methods:
+	    * NetCDFVar::deflate : to set compression
+	    * NetCDFVar::deflate_params : returns current values of
+	      compression parameters
+	    * NetCDFVar::endian= : set (change) the endian
+	    * NetCDFVar::endian : returns the current endian setting
+	   * added new constants: NC_ENDIAN_NATIVE (=0),
+	     NC_ENDIAN_LITTLE (=1), NC_ENDIAN_BIG (=2)
+	   * updated the safe-level condition, which was missed in the
+	     change on Jan 22.
+Fri Jan 23  2015  T Horinouchi
+	* doc/ updated
+Thu Jan 22  2015  T Horinouchi
+	* ruby-netcdf-0.7.0 released (relase tag: ruby-netcdf-0_7_0)
+Thu Jan 22  2015  T Horinouchi
+	* netcdfraw.c:
+	  * revised based on the patch posted by seiya with
+	    [dennou-ruby:003705] but adopted the typedef in the latest
+	    narray-bigmem (namely, used na_shape_t).
+	  * changed rb_secure(4) to rb_secure(3), since security
+	    level 4 is abolished in ruby 2.
+	  * further type update to na_shape_t (not covered
+	    by the patch)
+	  * deleted the unused variable nc_tlen in many methods.
+	* lib/netcdf.rb: revised along the patch [dennou-ruby:003705].
+	* extconf.rb: supported to configure gem-installed narray
+Mon Sep  8  2014  T Horinouchi
+	* lib/netcdf.rb: Tentative treatment of the very slow netcdf-4's
+	  strided reading.
+Sat Sep  6  2014  T Horinouchi
+	* netcdfraw.c: Added constants such as NC_NETCDF4;
+	  This enables one to individually specify the creation format by
+	  using the low level interface NetCDF.nc_create
+	* lib/netcdf.rb: Supported the "default" file creation format
+	  by adding NetCDF.creation_format= and NetCDF.creation_format.
+	* lib/netcdf.rb: Refactoring of NetCDF#simple_get.
+Sat Sep  6  2014  T Horinouchi
+	* extconf.rb
+	  * introduced the macro NCVER
+	  * changed to give a higer priority to NetCDF 4;
+	  * added $vendorarchdir to dir_config
+	* netcdfraw.c: Added the class method NetCDF.libvers (<- nc_inq_libvers)
+	* lib/netcdf.rb: Added the class constant NCVERSION (<- NetCDF.libvers)
+Mon Aug 25  2014  T Horinouchi
+	* netcdfraw.c: to avoid a compile error when -Werror=format-security
 Sun Feb 19  2011  T Horinouchi
 	* ruby-netcdf-0.6.6 released (relase tag: ruby-netcdf-0_6_6)
 	* lib/netcdf.rb: method pack: debug of enbug made 
