@@ -1,3 +1,7 @@
 Makefile
 Makefile.orig
 mkmf.log
+netcdfraw.o
+netcdfraw.so
+pkg/*
+test/test.nc
