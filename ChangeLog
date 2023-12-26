@@ -1,5 +1,6 @@
 Tue Dec 26  2023  C Özbek
   * Removed rb_secure(3) and OBJ_TAINT because they are deprecated since Ruby 3.0
+	* Update Rakefile to Ruby 3.0
 Tue Jan 27  2015  T Horinouchi
 	* ruby-netcdf-0.7.1 released (relase tag: ruby-netcdf-0_7_1)
 Tue Jan 27  2015  T Horinouchi

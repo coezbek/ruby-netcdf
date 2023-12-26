@@ -1,7 +1,8 @@
-require 'rake/gempackagetask'
+require 'rubygems'
+require 'rubygems/package_task'
 
 NAME = 'ruby-netcdf'
-VER = '0.6.6.1'
+VER = '0.7.2'
 
 PKG_FILES = FileList[
   '**',
@@ -26,8 +27,7 @@ spec = Gem::Specification.new do |s|
   s.files            = PKG_FILES.to_a
   s.require_paths    = ['lib']
   s.test_files = Dir.glob("test/*")
-  s.has_rdoc         = true
-  s.required_ruby_version = Gem::Requirement.new(">= 1.6")
+  s.required_ruby_version = Gem::Requirement.new(">= 3.0")
   s.add_runtime_dependency(%q<narray>, [">= 0"])
   s.add_runtime_dependency(%q<narray_miss>, [">= 0"])
   #s.extra_rdoc_files = ['README']
@@ -35,7 +35,6 @@ spec = Gem::Specification.new do |s|
   s.extensions << "extconf.rb"
 end
 
-Rake::GemPackageTask.new(spec) do |pkg|
-  pkg.gem_spec = spec
+Gem::PackageTask.new(spec) do |pkg|
   pkg.need_tar = true
 end
