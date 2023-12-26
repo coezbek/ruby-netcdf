@@ -569,8 +569,7 @@ NetCDF_inq_libvers(VALUE mod)
 }
 
 VALUE
-NetCDF_close(file)
-     VALUE file;
+NetCDF_close(VALUE file)
 {
   int status;
   int ncid;
