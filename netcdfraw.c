@@ -575,9 +575,6 @@ NetCDF_close(VALUE file)
   int ncid;
   struct Netcdf *Netcdffile;
 
-  if (rb_safe_level() >= 3 && !OBJ_TAINTED(file)) {
-      rb_raise(rb_eSecurityError, "Insecure: can't close");
-  }
   Data_Get_Struct(file,struct Netcdf,Netcdffile);
   ncid=Netcdffile->ncid;
   if(!Netcdffile->closed){
@@ -602,7 +599,6 @@ NetCDF_def_dim(VALUE file,VALUE dim_name,VALUE length)
   struct NetCDFDim *Netcdf_dim;
   VALUE Dimension;
   
-  rb_secure(3);
   Data_Get_Struct(file,struct Netcdf,Netcdffile);
   
   Check_Type(dim_name,T_STRING);
@@ -745,7 +741,6 @@ NetCDF_put_att(VALUE file,VALUE att_name,VALUE value,VALUE atttype)
     struct Netcdf *ncfile;
     char *name;
 
-    rb_secure(3);
     Data_Get_Struct(file,struct Netcdf,ncfile);
     Check_Type(att_name,T_STRING);
     name = RSTRING_PTR(att_name);
@@ -763,7 +758,6 @@ NetCDF_put_att_var(VALUE var,VALUE att_name,VALUE value,VALUE atttype)
     struct NetCDFVar *ncvar;
     char *name;
 
-    rb_secure(3);
     Data_Get_Struct(var,struct NetCDFVar,ncvar);
     Check_Type(att_name,T_STRING);
     name = RSTRING_PTR(att_name);
@@ -790,7 +784,6 @@ NetCDF_def_var(VALUE file,VALUE var_name,VALUE vartype,VALUE dimensions)
   struct NetCDFDim *Netcdf_dim;
   VALUE Var;
 
-  rb_secure(3);
   Check_Type(var_name,T_STRING);
   Check_Type(dimensions,T_ARRAY);
 
@@ -960,7 +953,6 @@ NetCDF_redef(VALUE file)
   int status;
   struct Netcdf *Netcdffile;
 
-  rb_secure(3);
   Data_Get_Struct(file,struct Netcdf,Netcdffile);
   ncid=Netcdffile->ncid;
   status = nc_redef(ncid);
@@ -982,7 +974,6 @@ NetCDF_enddef(VALUE file)
   int status;
   struct Netcdf *Netcdffile;
 
-  rb_secure(3);
   Data_Get_Struct(file,struct Netcdf,Netcdffile);
   ncid=Netcdffile->ncid;
   status = nc_enddef(ncid);
@@ -1009,7 +1000,6 @@ NetCDF_whether_in_define_mode(VALUE file)
   int status;
   struct Netcdf *Netcdffile;
 
-  rb_secure(3);
   Data_Get_Struct(file,struct Netcdf,Netcdffile);
   ncid=Netcdffile->ncid;
   status = nc_redef(ncid);
@@ -1160,7 +1150,6 @@ NetCDF_sync(VALUE file)
   int status;
   struct Netcdf *ncfile;
 
-  rb_secure(3);
   Data_Get_Struct(file,struct Netcdf,ncfile);
   ncid=ncfile->ncid;
   status = nc_sync(ncid);
@@ -1207,7 +1196,6 @@ NetCDF_dim_name(VALUE Dim,VALUE dimension_newname)
   char *c_dim_name;
   struct NetCDFDim *Netcdf_dim;
   
-  rb_secure(3);
   Data_Get_Struct(Dim,struct NetCDFDim,Netcdf_dim);
   ncid=Netcdf_dim->ncid;
   dimid=Netcdf_dim->dimid;
@@ -1238,7 +1226,6 @@ NetCDF_dim_inqname(VALUE Dim)
   if(status !=NC_NOERR) NC_RAISE(status);
   
   str = rb_str_new2(c_dim_name);
-  OBJ_TAINT(str);
   return(str);
 }
 
@@ -1270,7 +1257,6 @@ NetCDF_att_inq_name(VALUE Att)
   c_att_name=Netcdf_att->name;
   
   str = rb_str_new2(c_att_name);
-  OBJ_TAINT(str);
   return(str);
 }
 
@@ -1564,7 +1550,6 @@ NetCDF_att_copy(VALUE Att,VALUE Var_or_File)
   struct Netcdf    *ncfile;
   struct NetCDFAtt *Netcdf_att_out;
 
-  rb_secure(3);
   Data_Get_Struct(Att,struct NetCDFAtt,Netcdf_att);
   ncid_in=Netcdf_att->ncid;
   varid_in=Netcdf_att->varid;
@@ -1641,7 +1626,6 @@ NetCDF_att_delete(VALUE Att)
   char *c_att_name;
   struct NetCDFAtt *Netcdf_att;
 
-  rb_secure(3);
   Data_Get_Struct(Att,struct NetCDFAtt,Netcdf_att);
 
   ncid=Netcdf_att->ncid;
@@ -1663,7 +1647,6 @@ NetCDF_att_put(VALUE Att,VALUE value,VALUE atttype)
 {
   struct NetCDFAtt *ncatt;
  
-  rb_secure(3);
   Data_Get_Struct(Att,struct NetCDFAtt,ncatt);
   return( NetCDF_put_att__(ncatt->ncid, ncatt->name, value, 
 			   atttype, ncatt->varid) );
@@ -1706,7 +1689,6 @@ NetCDF_att_get(VALUE Att)
     status = nc_get_att_text(ncid,varid,c_attname,tp);
     if(status != NC_NOERR) NC_RAISE(status);
     str = rb_str_new2(tp);
-    OBJ_TAINT(str);
     return(str);
     break;
   case NC_BYTE:
@@ -1719,7 +1701,6 @@ NetCDF_att_get(VALUE Att)
     status = nc_get_att_uchar(ncid,varid,c_attname,up);
     if(status != NC_NOERR) NC_RAISE(status);
 
-    OBJ_TAINT(NArray);
     return NArray;
     break;
   case NC_SHORT:
@@ -1731,7 +1712,6 @@ NetCDF_att_get(VALUE Att)
     
     status = nc_get_att_short(ncid,varid,c_attname,sp);
     if(status != NC_NOERR) NC_RAISE(status);
-    OBJ_TAINT(NArray);
     return NArray;
     break;
   case NC_INT:
@@ -1744,7 +1724,6 @@ NetCDF_att_get(VALUE Att)
     status = nc_get_att_int(ncid,varid,c_attname,ip);
     if(status != NC_NOERR) NC_RAISE(status);
 
-    OBJ_TAINT(NArray);
     return NArray;
     break;
   case NC_FLOAT:
@@ -1757,7 +1736,6 @@ NetCDF_att_get(VALUE Att)
     status = nc_get_att_float(ncid,varid,c_attname,fp);
     if(status != NC_NOERR) NC_RAISE(status);
 
-    OBJ_TAINT(NArray);
     return NArray;
     break;
   case NC_DOUBLE:
@@ -1769,7 +1747,6 @@ NetCDF_att_get(VALUE Att)
     
     status = nc_get_att_double(ncid,varid,c_attname,dp);
     if(status != NC_NOERR) NC_RAISE(status);
-    OBJ_TAINT(NArray);
     return NArray;
     break;
   default:
@@ -1797,7 +1774,6 @@ NetCDF_var_inq_name(VALUE Var)
   if(status != NC_NOERR) NC_RAISE(status);
   
   Var_name=rb_str_new2(c_var_name);
-  OBJ_TAINT(Var_name);
   return Var_name;
 }
 
@@ -1906,7 +1882,6 @@ NetCDF_var_rename(VALUE Var,VALUE var_new_name)
   char *c_var_new_name;
   struct NetCDFVar *Netcdf_var;
   
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -2083,7 +2058,6 @@ NetCDF_get_var_char(VALUE Var)
   status = nc_get_var_text(ncid,varid,(char *)ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 }
 
@@ -2127,7 +2101,6 @@ NetCDF_get_var_byte(VALUE Var)
   status = nc_get_var_uchar(ncid,varid,ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 }
 
@@ -2171,7 +2144,6 @@ NetCDF_get_var_sint(VALUE Var)
   status = nc_get_var_short(ncid,varid,ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 }
 
@@ -2215,7 +2187,6 @@ NetCDF_get_var_int(VALUE Var)
   status = nc_get_var_int(ncid,varid,ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 }
 
@@ -2259,7 +2230,6 @@ NetCDF_get_var_float(VALUE Var)
   status = nc_get_var_float(ncid,varid,ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 }
 
@@ -2303,7 +2273,6 @@ NetCDF_get_var_double(VALUE Var)
   status = nc_get_var_double(ncid,varid,ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 }
 
@@ -2362,7 +2331,6 @@ NetCDF_get_var1_char(VALUE Var,VALUE start)
   status = nc_get_var1_text(ncid,varid,c_start,(char *)ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 
 }
@@ -2422,7 +2390,6 @@ NetCDF_get_var1_byte(VALUE Var,VALUE start)
   status = nc_get_var1_uchar(ncid,varid,c_start,ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 
 }
@@ -2478,7 +2445,6 @@ NetCDF_get_var1_sint(VALUE Var,VALUE start)
   status = nc_get_var1_short(ncid,varid,c_start,ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 
 }
@@ -2534,7 +2500,6 @@ NetCDF_get_var1_int(VALUE Var,VALUE start)
   status = nc_get_var1_int(ncid,varid,c_start,ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 
 }
@@ -2590,7 +2555,6 @@ NetCDF_get_var1_float(VALUE Var,VALUE start)
   status = nc_get_var1_float(ncid,varid,c_start,ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 
 }
@@ -2646,7 +2610,6 @@ NetCDF_get_var1_double(VALUE Var,VALUE start)
   status = nc_get_var1_double(ncid,varid,c_start,ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 
 }
@@ -2755,7 +2718,6 @@ NetCDF_get_vars_char(VALUE Var,VALUE start,VALUE end,VALUE stride)
   status = nc_get_vars_text(ncid,varid,c_start,c_count,c_stride,(char *)ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 }
 
@@ -2863,7 +2825,6 @@ NetCDF_get_vars_byte(VALUE Var,VALUE start,VALUE end,VALUE stride)
   status = nc_get_vars_uchar(ncid,varid,c_start,c_count,c_stride,ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 }
 
@@ -2972,7 +2933,6 @@ NetCDF_get_vars_sint(VALUE Var,VALUE start,VALUE end,VALUE stride)
   status = nc_get_vars_short(ncid,varid,c_start,c_count,c_stride,ptr);
   if(status != NC_NOERR) NC_RAISE(status);
   
-  OBJ_TAINT(NArray);
   return NArray;
 }
 
@@ -3081,7 +3041,6 @@ NetCDF_get_vars_int(VALUE Var,VALUE start,VALUE end,VALUE stride)
   status = nc_get_vars_int(ncid,varid,c_start,c_count,c_stride,ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 }
 
@@ -3190,7 +3149,6 @@ NetCDF_get_vars_float(VALUE Var,VALUE start,VALUE end,VALUE stride)
   status = nc_get_vars_float(ncid,varid,c_start,c_count,c_stride,ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 }
 
@@ -3298,7 +3256,6 @@ NetCDF_get_vars_double(VALUE Var,VALUE start,VALUE end,VALUE stride)
   status = nc_get_vars_double(ncid,varid,c_start,c_count,c_stride,ptr);
   if(status != NC_NOERR) NC_RAISE(status);
 
-  OBJ_TAINT(NArray);
   return NArray;
 }
 
@@ -3318,7 +3275,6 @@ NetCDF_put_var_char(VALUE Var,VALUE NArray)
   size_t lengthp;
   char *var_name;
 
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -3363,7 +3319,6 @@ NetCDF_put_var_byte(VALUE Var,VALUE NArray)
   size_t lengthp;
   char *var_name;
 
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -3408,7 +3363,6 @@ NetCDF_put_var_short(VALUE Var,VALUE NArray)
   size_t lengthp;
   char *var_name;
 
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -3453,7 +3407,6 @@ NetCDF_put_var_int(VALUE Var,VALUE NArray)
   size_t lengthp;
   char *var_name;
 
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -3501,8 +3454,6 @@ NetCDF_put_var_float(VALUE Var,VALUE NArray)
   size_t lengthp;
   char *var_name;
   
-  
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -3548,8 +3499,6 @@ NetCDF_put_var_double(VALUE Var,VALUE NArray)
   size_t lengthp;
   char *var_name;
 
-
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -3595,7 +3544,6 @@ NetCDF_put_var1_char(VALUE Var,VALUE NArray,VALUE start)
   int   *dimids;
   size_t dimlen;
   
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -3646,7 +3594,6 @@ NetCDF_put_var1_byte(VALUE Var,VALUE NArray,VALUE start)
   int   *dimids;
   size_t dimlen;
   
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -3697,7 +3644,6 @@ NetCDF_put_var1_sint(VALUE Var,VALUE NArray,VALUE start)
   int   *dimids;
   size_t dimlen;
   
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -3747,7 +3693,6 @@ NetCDF_put_var1_int(VALUE Var,VALUE NArray,VALUE start)
   int   *dimids;
   size_t dimlen;
   
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -3798,7 +3743,6 @@ NetCDF_put_var1_float(VALUE Var,VALUE NArray,VALUE start)
   int   *dimids;
   size_t dimlen;
   
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -3849,7 +3793,6 @@ NetCDF_put_var1_double(VALUE Var,VALUE NArray,VALUE start)
   int   *dimids;
   size_t dimlen;
   
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -3905,7 +3848,6 @@ NetCDF_put_vars_char(VALUE Var,VALUE NArray,VALUE start,VALUE end,VALUE stride)
   int   *dimids;
   size_t dimlen;
 
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -4011,7 +3953,6 @@ NetCDF_put_vars_byte(VALUE Var,VALUE NArray,VALUE start,VALUE end,VALUE stride)
   int   *dimids;
   size_t dimlen;
 
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -4117,7 +4058,6 @@ NetCDF_put_vars_sint(VALUE Var,VALUE NArray,VALUE start,VALUE end,VALUE stride)
   int   *dimids;
   size_t dimlen;
 
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -4224,7 +4164,6 @@ NetCDF_put_vars_int(VALUE Var,VALUE NArray,VALUE start,VALUE end,VALUE stride)
   int   *dimids;
   size_t dimlen;
 
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -4331,7 +4270,6 @@ NetCDF_put_vars_float(VALUE Var,VALUE NArray,VALUE start,VALUE end,VALUE stride)
   int   *dimids;
   size_t dimlen;
 
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
@@ -4438,7 +4376,6 @@ NetCDF_put_vars_double(VALUE Var,VALUE NArray,VALUE start,VALUE end,VALUE stride
   int   *dimids;
   size_t dimlen;
 
-  rb_secure(3);
   Data_Get_Struct(Var,struct NetCDFVar,Netcdf_var);
   ncid=Netcdf_var->ncid;
   varid=Netcdf_var->varid;
